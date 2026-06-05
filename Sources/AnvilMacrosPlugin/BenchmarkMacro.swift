@@ -38,12 +38,63 @@ public struct BenchmarkMacro: PeerMacro {
         }
 
         let access = funcDecl.modifiers.accessModifier.map { "\($0) " } ?? ""
+        let isAsync = funcDecl.signature.effectSpecifiers?.asyncSpecifier != nil
+        let isThrows = funcDecl.signature.effectSpecifiers?.throwsClause != nil
+        let isAsyncThrows = isAsync && isThrows
+
+        // Build the function call
+        let callPrefix: String
+        if isAsyncThrows {
+            callPrefix = "try await \(funcName)()"
+        } else if isAsync {
+            callPrefix = "await \(funcName)()"
+        } else if isThrows {
+            callPrefix = "try \(funcName)()"
+        } else {
+            callPrefix = "\(funcName)()"
+        }
+
+        // Build the benchmark body
+        let body: String
+        if isThrows {
+            body = """
+            let iterations = \(iterations)
+            var times: [Double] = []
+            times.reserveCapacity(iterations)
+            for _ in 0..<iterations {
+                let start = CFAbsoluteTimeGetCurrent()
+                do {
+                    _ = \(callPrefix)
+                } catch {
+                    times.append(CFAbsoluteTimeGetCurrent() - start)
+                    continue
+                }
+                let end = CFAbsoluteTimeGetCurrent()
+                times.append(end - start)
+            }
+            return BenchmarkMacroResult(functionName: "\(funcName)", iterations: iterations, times: times)
+            """
+        } else {
+            body = """
+            let iterations = \(iterations)
+            var times: [Double] = []
+            times.reserveCapacity(iterations)
+            for _ in 0..<iterations {
+                let start = CFAbsoluteTimeGetCurrent()
+                _ = \(callPrefix)
+                let end = CFAbsoluteTimeGetCurrent()
+                times.append(end - start)
+            }
+            return BenchmarkMacroResult(functionName: "\(funcName)", iterations: iterations, times: times)
+            """
+        }
+
+        let asyncKeyword = isAsync ? "async " : ""
+        let throwsKeyword = isThrows ? "throws " : ""
 
         let benchmarkDecl: DeclSyntax = """
-        \(raw: access)func \(raw: benchmarkName)() {
-            for _ in 0 ..< \(raw: iterations) {
-                _ = \(raw: funcName)()
-            }
+        \(raw: access)func \(raw: benchmarkName)() \(raw: asyncKeyword)\(raw: throwsKeyword)-> BenchmarkMacroResult {
+            \(raw: body)
         }
         """
 
