@@ -30,8 +30,10 @@ public struct BenchmarkMacro: PeerMacro {
 
         if let arguments = node.arguments?.as(LabeledExprListSyntax.self) {
             for arg in arguments {
-                if arg.label?.text == "iterations",
-                   let literal = arg.expression.as(IntegerLiteralExprSyntax.self) {
+                if
+                    arg.label?.text == "iterations",
+                    let literal = arg.expression.as(IntegerLiteralExprSyntax.self)
+                {
                     iterations = Int(literal.literal.text) ?? 1000
                 }
             }
@@ -43,21 +45,19 @@ public struct BenchmarkMacro: PeerMacro {
         let isAsyncThrows = isAsync && isThrows
 
         // Build the function call
-        let callPrefix: String
-        if isAsyncThrows {
-            callPrefix = "try await \(funcName)()"
+        let callPrefix = if isAsyncThrows {
+            "try await \(funcName)()"
         } else if isAsync {
-            callPrefix = "await \(funcName)()"
+            "await \(funcName)()"
         } else if isThrows {
-            callPrefix = "try \(funcName)()"
+            "try \(funcName)()"
         } else {
-            callPrefix = "\(funcName)()"
+            "\(funcName)()"
         }
 
         // Build the benchmark body
-        let body: String
-        if isThrows {
-            body = """
+        let body = if isThrows {
+            """
             let iterations = \(iterations)
             var times: [Double] = []
             times.reserveCapacity(iterations)
@@ -75,7 +75,7 @@ public struct BenchmarkMacro: PeerMacro {
             return BenchmarkMacroResult(functionName: "\(funcName)", iterations: iterations, times: times)
             """
         } else {
-            body = """
+            """
             let iterations = \(iterations)
             var times: [Double] = []
             times.reserveCapacity(iterations)

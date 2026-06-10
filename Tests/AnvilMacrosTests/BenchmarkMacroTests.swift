@@ -6,7 +6,7 @@ import Testing
 
 struct BenchmarkMacroTests {
     let macros: [String: Macro.Type] = [
-        "Benchmark": BenchmarkMacro.self,
+        "Benchmark": BenchmarkMacro.self
     ]
 
     @Test func benchmarkGeneratesDefaultIterations() {
@@ -172,7 +172,6 @@ struct BenchmarkMacroTests {
 
 @Suite("BenchmarkMacroResult")
 struct BenchmarkMacroResultTests {
-
     @Test("computes correct stats")
     func resultStats() {
         let result = BenchmarkMacroResult(

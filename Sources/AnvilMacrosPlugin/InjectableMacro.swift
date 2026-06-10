@@ -23,10 +23,12 @@ public struct InjectableMacro: MemberMacro {
         }
 
         let storedProperties = structDecl.memberBlock.members.compactMap { member -> (name: String, type: String)? in
-            guard let varDecl = member.decl.as(VariableDeclSyntax.self),
-                  let binding = varDecl.bindings.first,
-                  let identifier = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text,
-                  let typeAnnotation = binding.typeAnnotation?.type.description.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard
+                let varDecl = member.decl.as(VariableDeclSyntax.self),
+                let binding = varDecl.bindings.first,
+                let identifier = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.text,
+                let typeAnnotation = binding.typeAnnotation?.type.description
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
             else {
                 return nil
             }

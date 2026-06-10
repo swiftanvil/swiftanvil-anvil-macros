@@ -3,10 +3,9 @@ import SwiftSyntaxMacros
 import SwiftSyntaxMacrosTestSupport
 import Testing
 
-
 struct InjectableMacroTests {
     let macros: [String: Macro.Type] = [
-        "AnvilInjectable": InjectableMacro.self,
+        "AnvilInjectable": InjectableMacro.self
     ]
 
     @Test func InjectableGeneratesMemberwiseInit() {

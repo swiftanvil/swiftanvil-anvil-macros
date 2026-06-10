@@ -5,6 +5,6 @@ import SwiftSyntaxMacros
 struct AnvilMacrosPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         InjectableMacro.self,
-        BenchmarkMacro.self,
+        BenchmarkMacro.self
     ]
 }
